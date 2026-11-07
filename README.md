@@ -354,6 +354,52 @@ kubectl exec deployment/postgres -n ticket-tracker -- psql -U ticketuser -d tick
 
 
 
+
+## Terraform Infrastructure Management
+
+Terraform manages Kubernetes infrastructure through Infrastructure as Code (IaC).
+
+The HashiCorp Kubernetes provider connects to the existing local kind cluster and manages a ResourceQuota in the `ticket-tracker` namespace.
+
+### Terraform Configuration
+
+Configuration file: `terraform/main.tf`
+
+- Provider: HashiCorp Kubernetes v2.38.0.
+- Kubernetes context: `kind-ticket-tracker-cluster`.
+- Managed resource: `ticket-tracker-quota`.
+
+### ResourceQuota Configuration
+
+| Resource | Configured Limit |
+|---|---:|
+| Pods | 10 |
+| Persistent Volume Claims | 2 |
+| Requested Storage | 2Gi |
+
+### Terraform Workflow
+
+Run these commands from the `terraform` directory:
+
+- `terraform init` - Initialize the provider.
+- `terraform fmt` - Format configuration files.
+- `terraform validate` - Validate configuration.
+- `terraform plan` - Preview infrastructure changes.
+- `terraform apply` - Apply approved changes.
+
+### Terraform State and Security
+
+- Terraform state files are excluded from Git.
+- The `.terraform` provider directory is excluded from version control.
+- `.terraform.lock.hcl` is committed to maintain consistent provider versions.
+- Local Terraform state is not published to the public repository.
+
+### Infrastructure Management Approach
+
+Terraform manages the Kubernetes ResourceQuota, while Kubernetes YAML manifests manage the Flask API and PostgreSQL deployments.
+
+This demonstrates Infrastructure as Code, resource governance, infrastructure planning, and Terraform state management.
+
 ## CI/CD Pipeline
 
 
