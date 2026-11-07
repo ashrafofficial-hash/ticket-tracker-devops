@@ -1,0 +1,63 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-tracker-api
+  namespace: ticket-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticket-tracker-api
+  template:
+    metadata:
+      labels:
+        app: ticket-tracker-api
+    spec:
+      containers:
+        - name: ticket-tracker-api
+          image: ghcr.io/ashrafofficial-hash/ticket-tracker-api:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 5000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-tracker-db-secret
+                  key: DATABASE_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticket-tracker-service
+  namespace: ticket-tracker
+spec:
+  type: ClusterIP
+  selector:
+    app: ticket-tracker-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
+      protocol: TCP
